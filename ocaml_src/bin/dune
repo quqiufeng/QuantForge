@@ -1,0 +1,6 @@
+(executable
+ (name main)
+ (public_name quantforge-ingestion)
+ (modules main)
+ (libraries quantforge lwt lwt.unix)
+ (preprocess (pps lwt_ppx)))
