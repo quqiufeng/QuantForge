@@ -1,57 +1,61 @@
 # QuantForge
 
-超低延迟 AI 量化交易系统 (OCaml 4 稳定版)
+超低延迟 AI 量化交易系统 (OCaml 4 + RTX 3080 20G CUDA)
 
 ## 架构概述
 
-QuantForge 是一个跨语言混合的高性能量化交易系统，完全抛弃 Python 运行时，实现亚毫秒级端到端延迟。
+完全抛弃 Python 运行时，实现亚毫秒级端到端延迟。
 
 ### 核心组件
 
-- **OCaml 4** (行情接入与风控): 单核单线程架构，基于 Lwt 异步事件循环
-- **Chez Scheme** (策略引擎与动态沙箱): 支持 Alpha 因子实时热更新
-- **LibTorch C++** (深度学习核心): 纯 C++ 环境下的高性能前向推理
+| 组件 | 技术 | 用途 |
+|------|------|------|
+| 行情引擎 | OCaml 4 + Lwt | 高频 Tick 接入 |
+| 推理核心 | LibTorch + CUDA | FP16 半精度推理 |
+| 策略引擎 | Chez Scheme | Alpha 因子动态热更新 |
+
+### RTX 3080 20G 优化
+
+- **Pinned Memory**: cudaHostAlloc 固定内存，DMA 高速搬运
+- **CUDA Streams**: non_blocking=true 异步传输
+- **FP16 Tensor Core**: 推理算力翻倍，显存占用减半
+- **零拷贝**: from_blob 直接包装 pinned memory
 
 ### 目录结构
 
 ```
 quantforge/
-├── Makefile                 # 统一构建脚本
-├── dune-project             # OCaml 项目定义
-├── c_src/                   # C++ / LibTorch 桥接层
-├── ocaml_src/               # OCaml 4 行情接入引擎
-│   ├── bin/main.ml          # Lwt 异步主循环入口
-│   └── lib/                 # 类型定义与接入模块
-└── scheme_src/              # Chez Scheme 策略沙箱
+├── Makefile                 # CUDA 编译配置
+├── c_src/                   # C++/LibTorch CUDA 桥接层
+│   ├── libquant_core.h      # 接口声明
+│   └── libquant_core.cpp    # CUDA 实现
+├── ocaml_src/               # OCaml 4 行情引擎
+│   ├── bin/main.ml          # Lwt 异步主循环
+│   └── lib/                 # 类型定义
+└── scheme_src/              # Chez Scheme 策略
+    ├── main.ss              # 策略主循环
+    └── strategy.ss          # Alpha 因子
 ```
 
 ## 快速开始
 
-### 安装依赖
-
 ```bash
-make deps
-```
+# 验证 CUDA 环境
+make verify-cuda
 
-### 构建项目
-
-```bash
+# 构建所有组件
 make all
-```
 
-### 运行行情接入引擎
-
-```bash
+# 运行行情引擎
 make run
 ```
 
-## 设计原则
+## 路径配置
 
-1. **零拷贝 (Zero-Copy)**: 数据交互基于无锁环形缓冲区
-2. **单线程 GC 隔离**: OCaml 4 单线程运行时避免 GC 抖动
-3. **异常绝对隔离**: C++ 异常不跨越 ABI 边界
-4. **无锁通知**: 原子计数器实现进程间同步
+- LibTorch CUDA: `/data/libtorch_cuda`
+- CUDA Toolkit: `/data/cuda`
+- Chez Scheme: `/data/ChezScheme`
 
 ## License
 
-See [LICENSE](LICENSE) file.
+See [LICENSE](LICENSE).

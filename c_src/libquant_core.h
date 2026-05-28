@@ -8,34 +8,51 @@
 extern "C" {
 #endif
 
-/* 缓存行对齐的全局特征缓冲区 (1024 floats) */
+/*
+ * ============================================================
+ * QuantForge - RTX 3080 20G CUDA 加速版
+ * ============================================================
+ */
+
 #define FEATURE_BUFFER_SIZE 1024
+#define HEARTBEAT_TIMEOUT_MS 50
 
-/* 原子序列计数器类型 */
-typedef struct {
-    uint64_t sequence;
-} atomic_counter_t;
+/* 特征缓冲区 - CUDA 固定内存 */
+extern float* g_feature_ring_buffer;
 
-/* 加载 TorchScript 模型，返回模型指针，失败返回 NULL */
+/* 缓存行对齐的原子序列计数器 */
+alignas(64) extern uint64_t g_sequence_counter;
+
+/* 缓存行对齐的心跳计数器 */
+alignas(64) extern uint64_t g_ocaml_heartbeat;
+alignas(64) extern uint64_t g_scheme_heartbeat;
+
+/* 缓存行对齐的紧急停止标志 */
+alignas(64) extern uint32_t g_emergency_stop;
+
+/* GPU 状态 */
+extern int g_cuda_available;
+extern int g_cuda_device_id;
+
+/* 核心函数接口 */
+int init_cuda_context(void);
+void cleanup_cuda_context(void);
 void* load_torch_model(const char* path);
-
-/* 执行推理，返回预测值，失败返回 -999.0f */
 float run_inference(void* model_ptr);
-
-/* 释放模型资源 */
 void free_torch_model(void* model_ptr);
-
-/* 获取全局特征缓冲区指针 */
-float* get_feature_buffer(void);
-
-/* 获取原子序列计数器指针 */
-uint64_t* get_sequence_counter(void);
-
-/* 写入特征到缓冲区并更新序列号 */
+float* get_feature_buffer_ptr(void);
+uint64_t* get_sequence_counter_ptr(void);
 void write_features(const float* data, size_t count);
-
-/* 读取当前序列号 */
 uint64_t read_sequence(void);
+void update_ocaml_heartbeat(void);
+void update_scheme_heartbeat(void);
+int check_system_health(void);
+void trigger_emergency_stop(void);
+int is_emergency_stopped(void);
+void clear_emergency_stop(void);
+int get_cuda_device_count(void);
+const char* get_cuda_device_name(void);
+size_t get_cuda_free_memory(void);
 
 #ifdef __cplusplus
 }
