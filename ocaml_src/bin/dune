@@ -3,4 +3,11 @@
  (public_name quantforge-ingestion)
  (modules main)
  (libraries quantforge lwt lwt.unix)
- (preprocess (pps lwt_ppx)))
+ (preprocess (pps lwt_ppx))
+ (link_flags (
+   -cclib
+   -L/opt/QuantForge/c_src
+   -cclib
+   -lquant_bridge
+   -cclib
+   -Wl,-rpath,/opt/QuantForge/c_src)))

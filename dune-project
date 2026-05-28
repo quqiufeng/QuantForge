@@ -7,4 +7,5 @@
  (description "OCaml 4 ingestion engine with Lwt async event loop")
  (depends
   (lwt (>= 5.6.0))
-  (lwt_ppx (>= 2.0.0))))
+  (lwt_ppx (>= 2.0.0))
+  (ctypes (>= 0.20.0))))
