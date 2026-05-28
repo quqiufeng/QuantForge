@@ -679,3 +679,10 @@ SCHEME_BIN = /data/ChezScheme/pb/bin/pb/petite
 - [PyTorch](https://pytorch.org/) - 深度学习框架
 - [Chez Scheme](https://cisco.github.io/ChezScheme/) - 高性能 Scheme 实现
 - [Lwt](https://ocsigen.org/lwt/) - OCaml 协程库
+
+## 设计文档
+
+| 文档 | 说明 |
+|------|------|
+| [设计规格说明书](docs/DESIGN_SPEC.md) | 完整的五章架构设计 |
+| [实现规格补充修正案](docs/DESIGN_SPEC_ADDENDUM.md) | ABI稳定性、Tensor解包、GC协同、内存屏障 |
